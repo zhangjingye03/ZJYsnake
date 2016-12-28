@@ -25,7 +25,7 @@ class snakeBlock {
     }
 };
 
-void printSnake (snakeBlock (*sb)[SIZE * 2]) { // []'s priorty is higher than *. Firstly point to the addr, and then define the type. This is a (SIZE*2)-array with sb-pointer in it.
+void printSnake (snakeBlock (*sb)[LIMIT]) { // []'s priorty is higher than *. Firstly point to the addr, and then define the type. This is a (LIMIT)-array with sb-pointer in it.
   char map[SIZE][SIZE];
   for (int i = 0; i < SIZE; i++) {
     for (int j = 0; j < SIZE; j++) {
@@ -63,7 +63,7 @@ void moveBlock (snakeBlock* sCurrent, snakeBlock* sLast) {
   }
 }
 
-char moveSnake (snakeBlock (*sb)[SIZE * 2], char dir) {
+char moveSnake (snakeBlock (*sb)[LIMIT], char dir) {
   char jx = (*sb)[0].x, jy = (*sb)[0].y;
   if (dir == 4) { //right
     if ((*sb)[0].d == 3) return 2; // contradict
@@ -100,11 +100,11 @@ void printFrameX() {
 }
 
 int main() {
-  snakeBlock s[LIMIT]; // this array contains (SIZE*2) snakeBlock class.
+  snakeBlock s[LIMIT]; // this array contains (LIMIT) snakeBlock class.
   s[0].set(1,0,4);
   s[1].set(0,0,4); printFrameX();
   while (1) {
-    printSnake(&s); // &s is a pointer pointing to the (SIZE*2)-snakeBlock-array.
+    printSnake(&s); // &s is a pointer pointing to the (LIMIT)-snakeBlock-array.
     printFrameX();
     char a, res;
     a = getc(stdin);
