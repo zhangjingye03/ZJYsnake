@@ -3,10 +3,11 @@
 #include <stdlib.h>
 #define SIZE 8
 #define INITS 2
+#define LIMIT SIZE * SIZE / 2
 #define random(x) (rand()%x)
 
 char tail = INITS - 1;
-
+char hasFood = 0; char fx, fy;
 
 class snakeBlock {
   public:
@@ -31,9 +32,9 @@ void printSnake (snakeBlock (*sb)[SIZE * 2]) { // []'s priorty is higher than *.
       map[i][j] = ' ';
     }
   }
+  if (hasFood == 1) map[fy][fx] = 'F';
   for (int i = 0; i <= tail; i++) { // tail is the last element
     map[(*sb)[i].y][(*sb)[i].x] = ( i == 0 ) ? 'O' : 'o'; //*sb[i].x || sb[i]->x
-    //printf("index%d, x = %x, y = %x, d = %x\n", i, (*sb)[i].x, (*sb)[i].y, (*sb)[i].getD());
   }
   for (int i = 0; i < SIZE; i++) {
     printf("|");
@@ -63,23 +64,30 @@ void moveBlock (snakeBlock* sCurrent, snakeBlock* sLast) {
 }
 
 char moveSnake (snakeBlock (*sb)[SIZE * 2], char dir) {
+  char jx = (*sb)[0].x, jy = (*sb)[0].y;
   if (dir == 4) { //right
     if ((*sb)[0].d == 3) return 2; // contradict
-    if ((*sb)[0].x == SIZE - 1) return 1; // game over
+    jx++;
   } else if (dir == 3) { //left
     if ((*sb)[0].d == 4) return 2; // contradict
-    if ((*sb)[0].x == 0) return 1; // game over
+    jx--;
   } else if (dir == 2) { //down
     if ((*sb)[0].d == 1) return 2; // contradict
-    if ((*sb)[0].y == SIZE - 1) return 1; // game over
+    jy++;
   } else if (dir == 1) { //up
     if ((*sb)[0].d == 2) return 2; // contradict
-    if ((*sb)[0].y == 0) return 1; // game over
+    jy--;
+  }
+  if (jx >= SIZE || jx < 0 || jy >= SIZE || jy < 0) return 1;
+  if (jx == fx && jy == fy && hasFood == 1) { // gain food~
+    (*sb)[tail + 1].x = (*sb)[tail].x; (*sb)[tail + 1].y = (*sb)[tail].y; hasFood = 2; /*tail++; if now append, it is difficult to operate then.*/
   }
   (*sb)[0].d = dir;
   for (int i = tail; i >= 0; i--) {
     moveBlock (&(*sb)[i], (i == 0) ? &(*sb)[i] : &(*sb)[i - 1]);
+    if (i != 0 && (*sb)[i].x == jx && (*sb)[i].y == jy) return 3; // crash into self!
   }
+  if (hasFood == 2) { hasFood = 0; if (++tail == LIMIT) return 4; } // after move the snake, we append the tail up.
   return 0;
 }
 
@@ -91,9 +99,8 @@ void printFrameX() {
   printf(" |\n");
 }
 
-char hasFood = 0; char fx, fy;
 int main() {
-  snakeBlock s[SIZE * 2]; // this array contains (SIZE*2) snakeBlock class.
+  snakeBlock s[LIMIT]; // this array contains (SIZE*2) snakeBlock class.
   s[0].set(1,0,4);
   s[1].set(0,0,4); printFrameX();
   while (1) {
@@ -102,30 +109,21 @@ int main() {
     char a, res;
     a = getc(stdin);
     //printf("\n%d",a);
-    if (random(3) == 0 && hasFood == 0) { //true, put food
+    if (random(2) == 0 && hasFood == 0) { //true, put food
       fx = random(SIZE); fy = random(SIZE); hasFood = 1;
     }
-
     printFrameX();
     switch(a) {
       case 119: case 87: //W w
-        // judge food
-        // move snake
         res = moveSnake(&s, 1);
         break;
       case 97: case 65: //A a
-        // judge food
-        // move snake
         res = moveSnake(&s, 3);
         break;
       case 115: case 83: //S s
-        // judge food
-        // move snake
         res = moveSnake(&s, 2);
         break;
       case 100: case 68: //D d
-        // judge food
-        // move snake
         res = moveSnake(&s, 4);
         break;
       case 113: case 81: //Q q
@@ -137,6 +135,10 @@ int main() {
       printf("\n\nGame Over!\n"); return 0;
     } else if (res == 2) {
       printf("\nInvalid direction!\n");
+    } else if (res == 3) {
+      printf("\nHow fool you are!\n"); return 0;
+    } else if (res == 4) {
+      printf("\nYou won~~ You are the snake fucker!\n"); return 0;
     }
   }
 }
